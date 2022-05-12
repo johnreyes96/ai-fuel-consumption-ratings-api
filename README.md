@@ -1,2 +1,3 @@
-# ai-color-polygon-images
-Artificial intelligence project about color polygon images dataset. https://www.kaggle.com/datasets/gonzalorecioc/color-polygon-images
+# 2022 Fuel Consumption Ratings - Artificial Intelligence
+Artificial intelligence project about 2022 fuel consumption ratings dataset.
+https://www.kaggle.com/datasets/rinichristy/2022-fuel-consumption-ratings
