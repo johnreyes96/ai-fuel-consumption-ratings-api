@@ -3,24 +3,24 @@ import pandas as pd
 
 
 def getConnection():
-    return create_engine('postgres://postgres:postgrespw@localhost:49153/')
+    return create_engine('postgresql://postgres:postgrespw@localhost:49153/')
 
 
 def loadDB():
-    file = "MY2022FuelConsumptionRatings.csv"
-    datos = pd.read_csv(file, sep='\s+', names=['Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'Class'])
-    datos.to_sql('temp_vehicle', con=getConnection())
+    conn = getConnection()
+    file = "D:\\Users\\jhonf\\Documents\\Programacion\\Codigo\\Python\\ai-fuel-consumption-ratings\\src\\main" \
+           "\\resoures\\MY2022FuelConsumptionRatings.csv"
+    datos = pd.read_csv(file, names=['strModelYear', 'strMake', 'strModel', 'strClass'])
+    datos.to_sql('temp_vehicle', con=conn)
 
 
 def queryPerClass(clase):
     query = """ SELECT *
-                FROM "Ecoli"
-                WHERE "Class" = %(clase)s """
-    queryParameters = {'clase': clase}
-    dataQuery = pd.read_sql_query(query, con=getConnection(), params=queryParameters)
+                FROM "temp_vehicle" """
+    dataQuery = pd.read_sql_query(query, con=getConnection())
     return dataQuery
 
 
 if __name__ == '__main__':
     loadDB()
-    queryPerClass("")
+    print(queryPerClass(""))
