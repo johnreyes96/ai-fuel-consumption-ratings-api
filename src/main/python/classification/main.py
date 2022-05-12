@@ -18,8 +18,9 @@ def loadDB():
     conn = getConnection()
     file = "D:\\Users\\jhonf\\Documents\\Programacion\\Codigo\\Python\\ai-fuel-consumption-ratings\\src\\main" \
            "\\resoures\\MY2022FuelConsumptionRatings.csv"
-    datos = pd.read_csv(file, names=['strModelYear', 'strMake', 'strModel', 'strClass'])
+    datos = pd.read_csv(file, usecols=['strModelYear', 'strMake', 'strModel', 'strClass'])
     dropTable()
+    datos = datos.drop_duplicates()
     datos.to_sql('temp_vehicle', con=conn)
 
 
