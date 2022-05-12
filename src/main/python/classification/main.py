@@ -1,9 +1,17 @@
 from sqlalchemy import create_engine
 import pandas as pd
+from sqlalchemy.schema import DropTable, Table, MetaData
 
 
 def getConnection():
     return create_engine('postgresql://postgres:postgrespw@localhost:49153/')
+
+
+def dropTable():
+    conn = getConnection()
+    conn.execute(DropTable(
+        Table('temp_vehicle', MetaData(), schema='public')
+    ))
 
 
 def loadDB():
@@ -11,6 +19,7 @@ def loadDB():
     file = "D:\\Users\\jhonf\\Documents\\Programacion\\Codigo\\Python\\ai-fuel-consumption-ratings\\src\\main" \
            "\\resoures\\MY2022FuelConsumptionRatings.csv"
     datos = pd.read_csv(file, names=['strModelYear', 'strMake', 'strModel', 'strClass'])
+    dropTable()
     datos.to_sql('temp_vehicle', con=conn)
 
 
