@@ -29,7 +29,7 @@ def loadVehicleTable(file):
     vehicleColumnNames = ['strModelYear', 'strMake', 'strModel', 'strClass']
     vehicleData = pd.read_csv(file, usecols=vehicleColumnNames)
     vehicleData = vehicleData.drop_duplicates()
-    vehicleData.to_sql('tbl_vehicle', con=conn, if_exists='replace', index=True, index_label='id')
+    vehicleData.to_sql('tbl_vehicle', con=conn, if_exists='replace', index_label='id')
 
 
 def dropVehicleColumnsToFuelConsumption(fuelConsumptionData):
@@ -46,7 +46,21 @@ def loadFuelConsumptionTable(file):
     fuelConsumptionData = pd.read_csv(file, usecols=vehicleColumnNames + fuelConsumptionColumnNames)
     fuelConsumptionData = relateVehicleTableToFuelConsumption(fuelConsumptionData)
     fuelConsumptionData = dropVehicleColumnsToFuelConsumption(fuelConsumptionData)
-    fuelConsumptionData.to_sql('tbl_fuelConsumption', con=conn, if_exists='replace', index=True, index_label='id')
+    fuelConsumptionData.to_sql('tbl_fuelConsumption', con=conn, if_exists='replace', index_label='id')
+
+
+def dropConstraintsToTables():
+    conn = getConnection()
+    conn.execute("ALTER TABLE \"tbl_fuelConsumption\" DROP CONSTRAINT IF EXISTS fk_id_vehicle_fuel_consumption")
+
+
+def addConstraintsToTables():
+    conn = getConnection()
+    conn.execute("ALTER TABLE tbl_vehicle ADD PRIMARY KEY (id)")
+    conn.execute("ALTER TABLE \"tbl_fuelConsumption\" ADD PRIMARY KEY (id)")
+    conn.execute("ALTER TABLE \"tbl_fuelConsumption\" ADD CONSTRAINT fk_id_vehicle_fuel_consumption"
+                 " FOREIGN KEY (\"vehicleId\")"
+                 " REFERENCES tbl_vehicle (id)")
 
 
 def findAllVehicles():
@@ -60,7 +74,7 @@ def findFuelConsumptionRatings():
         fc."intCylinders", fc."strTransmission", fc."strFuelType", fc."douFuelConsumption_City_L-100km",
         fc."intCO2Emissions_g-km", fc."intCO2Rating"
         FROM "tbl_fuelConsumption" fc
-        INNER JOIN "tbl_vehicle" ve ON ve.id = fc."vehicleId" """
+        INNER JOIN tbl_vehicle ve ON ve.id = fc."vehicleId" """
     pd.set_option('display.max_columns', 15)
     print(pd.read_sql_query(query, con=getConnection()))
 
@@ -68,6 +82,8 @@ def findFuelConsumptionRatings():
 if __name__ == '__main__':
     fileName = "D:\\Users\\jhonf\\Documents\\Programacion\\Codigo\\Python\\ai-fuel-consumption-ratings\\src\\main" \
            "\\resoures\\MY2022FuelConsumptionRatings.csv"
+    dropConstraintsToTables()
     loadVehicleTable(fileName)
     loadFuelConsumptionTable(fileName)
     findFuelConsumptionRatings()
+    addConstraintsToTables()
