@@ -51,13 +51,17 @@ def loadFuelConsumptionTable(file):
 
 def findAllVehicles():
     query = """ SELECT *
-                FROM "tbl_vehicle" """
+                FROM tbl_vehicle """
     return pd.read_sql_query(query, con=getConnection())
 
 
 def findFuelConsumptionRatings():
-    query = """ SELECT *
-                FROM "tbl_fuelConsumption" """
+    query = """ SELECT ve."strModelYear", ve."strMake", ve."strModel", ve."strClass", fc."douEngineSize_L",
+        fc."intCylinders", fc."strTransmission", fc."strFuelType", fc."douFuelConsumption_City_L-100km",
+        fc."intCO2Emissions_g-km", fc."intCO2Rating"
+        FROM "tbl_fuelConsumption" fc
+        INNER JOIN "tbl_vehicle" ve ON ve.id = fc."vehicleId" """
+    pd.set_option('display.max_columns', 15)
     print(pd.read_sql_query(query, con=getConnection()))
 
 
