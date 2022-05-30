@@ -1,5 +1,9 @@
 from sqlalchemy import create_engine
 import pandas as pd
+from flask import Flask, jsonify
+
+
+app = Flask(__name__)
 
 
 def getConnection():
@@ -76,14 +80,23 @@ def findFuelConsumptionRatings():
         FROM "tbl_fuelConsumption" fc
         INNER JOIN tbl_vehicle ve ON ve.id = fc."vehicleId" """
     pd.set_option('display.max_columns', 15)
-    print(pd.read_sql_query(query, con=getConnection()))
+    return pd.read_sql_query(query, con=getConnection())
 
 
-if __name__ == '__main__':
+@app.route('/populate-db', methods=['GET'])
+def populateDB():
     fileName = "D:\\Users\\jhonf\\Documents\\Programacion\\Codigo\\Python\\ai-fuel-consumption-ratings\\src\\main" \
            "\\resoures\\MY2022FuelConsumptionRatings.csv"
     dropConstraintsToTables()
     loadVehicleTable(fileName)
     loadFuelConsumptionTable(fileName)
-    findFuelConsumptionRatings()
     addConstraintsToTables()
+    dataFrame = findFuelConsumptionRatings()
+    response = {
+        'data': dataFrame.to_json(orient='index')
+    }
+    return jsonify(response)
+
+
+if __name__ == '__main__':
+    app.run(debug=True, host='localhost', port=8090)
