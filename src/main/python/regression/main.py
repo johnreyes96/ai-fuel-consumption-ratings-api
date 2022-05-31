@@ -2,6 +2,9 @@ from sqlalchemy import create_engine
 import pandas as pd
 from flask import Flask, jsonify
 from scipy import stats
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import LabelEncoder
+from sklearn import linear_model
 
 
 app = Flask(__name__)
@@ -134,6 +137,51 @@ def getPersonRStats():
         'Smog Rating': smogRatingStats,
         'Cylinders': cylindersStats,
         'Engine Size': engineSizeStats
+    }
+    return jsonify(response)
+
+
+@app.route('/linear-regression-feature-importance', methods=['GET'])
+def linearRegressionFeatureImportance():
+    dataFrame = pd.read_csv("D:\\Users\\jhonf\\Documents\\Programacion\\Codigo\\Python\\ai-fuel-consumption-ratings\\src\\main" \
+           "\\resoures\\MY2022FuelConsumptionRatings.csv")
+    le = LabelEncoder()
+    dataFrame['strClass'] = le.fit_transform(dataFrame['strClass'])
+    dataFrame['strTransmission'] = le.fit_transform(dataFrame['strTransmission'])
+    dataFrame['strFuelType'] = le.fit_transform(dataFrame['strFuelType'])
+
+    # define dataset
+    X = dataFrame[['strClass', 'douEngineSize_L', 'intCylinders', 'strTransmission', 'strFuelType',
+                   'intCO2Emissions_g-km', 'intCO2Rating', 'intSmogRating']]
+    y = dataFrame[['douFuelConsumption_Comb_L-100km']]
+    from sklearn.model_selection import train_test_split
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=4)
+
+    mlm = linear_model.LinearRegression()
+    mlm.fit(X_train, y_train)
+    # The value of the intercept (a)
+    print('The value of the intercept of mutiple linear regression model is: ', mlm.intercept_)
+    # The coefficients
+    print('The Coefficients of mutiple linear regression model is: ', mlm.coef_)
+
+    Features = ['strClass', 'douEngineSize_L', 'intCylinders', 'strTransmission', 'strFuelType', 'intCO2Emissions_g-km',
+                'intCO2Rating', 'intSmogRating']
+    # define the model
+    model = LinearRegression()
+    # fit the model
+    model.fit(X_train, y_train)
+    # get importance
+    importance = model.coef_
+    # summarize feature importance
+    for index, coef in enumerate(importance):
+        print('Feature: %0d, Score: %.5f' % (index, coef))
+
+    response = {
+        'CO2 Emissions(g/km)': 'co2EmissionsStats',
+        'CO2 Rating': 'co2RatingStats',
+        'Smog Rating': 'smogRatingStats',
+        'Cylinders': 'cylindersStats',
+        'Engine Size': 'engineSizeStats'
     }
     return jsonify(response)
 
