@@ -113,22 +113,27 @@ def populateDB():
 @app.route('/person-stats', methods=['GET'])
 def getPersonRStats():
     dataFrame = findAllDataSet()
-    pearsonCoef, p_value = stats.pearsonr(dataFrame['intCO2Emissions_g-km'], dataFrame['douFuelConsumption_Comb_L-100km'])
-    stat1 = "The Pearson Correlation Coefficient of CO2 Emissions(g/km) vs Fuel Consumption(Comb (L/100 km)) is" + str(pearsonCoef) + " with a P-value of P =" + str(p_value)
-    pearsonCoef, p_value = stats.pearsonr(dataFrame['intCO2Rating'], dataFrame['douFuelConsumption_Comb_L-100km'])
-    stat2 = "The Pearson Correlation Coefficient of CO2 Rating vs Fuel Consumption(Comb (L/100 km)) is" + str(pearsonCoef) + " with a P-value of P =" + str(p_value)
-    pearsonCoef, p_value = stats.pearsonr(dataFrame['intSmogRating'], dataFrame['douFuelConsumption_Comb_L-100km'])
-    stat3 = "The Pearson Correlation Coefficient of Smog Rating vs Fuel Consumption(Comb (L/100 km)) is" + str(pearsonCoef) + " with a P-value of P =" + str(p_value)
-    pearsonCoef, p_value = stats.pearsonr(dataFrame['intCylinders'], dataFrame['douFuelConsumption_Comb_L-100km'])
-    stat4 = "The Pearson Correlation Coefficient of Cylinders vs  Combined City & Highway Fuel Consumption is" + str(pearsonCoef) + " with a P-value of P =" + str(p_value)
-    pearsonCoef, p_value = stats.pearsonr(dataFrame['douEngineSize_L'], dataFrame['douFuelConsumption_Comb_L-100km'])
-    stat5 = "The Pearson Correlation Coefficient Engine Size vs Combined City & Highway Fuel Consumption is" + str(pearsonCoef) + " with a P-value of P =" + str(p_value)
+    pearsonCC, pValue = stats.pearsonr(dataFrame['intCO2Emissions_g-km'], dataFrame['douFuelConsumption_Comb_L-100km'])
+    co2EmissionsStats = "The Pearson Correlation Coefficient of CO2 Emissions(g/km) vs Fuel Consumption(Comb (L/100 "\
+                        "km)) is" + str(pearsonCC) + " with a P-value of P = " + str(pValue)
+    pearsonCC, pValue = stats.pearsonr(dataFrame['intCO2Rating'], dataFrame['douFuelConsumption_Comb_L-100km'])
+    co2RatingStats = "The Pearson Correlation Coefficient of CO2 Rating vs Fuel Consumption(Comb (L/100 km)) is "\
+                     + str(pearsonCC) + " with a P-value of P = " + str(pValue)
+    pearsonCC, pValue = stats.pearsonr(dataFrame['intSmogRating'], dataFrame['douFuelConsumption_Comb_L-100km'])
+    smogRatingStats = "The Pearson Correlation Coefficient of Smog Rating vs Fuel Consumption(Comb (L/100 km)) is "\
+                      + str(pearsonCC) + " with a P-value of P = " + str(pValue)
+    pearsonCC, pValue = stats.pearsonr(dataFrame['intCylinders'], dataFrame['douFuelConsumption_Comb_L-100km'])
+    cylindersStats = "The Pearson Correlation Coefficient of Cylinders vs Combined City & Highway Fuel Consumption is "\
+                     + str(pearsonCC) + " with a P-value of P = " + str(pValue)
+    pearsonCC, pValue = stats.pearsonr(dataFrame['douEngineSize_L'], dataFrame['douFuelConsumption_Comb_L-100km'])
+    engineSizeStats = "The Pearson Correlation Coefficient Engine Size vs Combined City & Highway Fuel Consumption is "\
+                      + str(pearsonCC) + " with a P-value of P = " + str(pValue)
     response = {
-        'CO2 Emissions(g/km)': stat1,
-        'CO2 Rating': stat2,
-        'Smog Rating': stat3,
-        'Cylinders': stat4,
-        'Engine Size': stat5
+        'CO2 Emissions(g/km)': co2EmissionsStats,
+        'CO2 Rating': co2RatingStats,
+        'Smog Rating': smogRatingStats,
+        'Cylinders': cylindersStats,
+        'Engine Size': engineSizeStats
     }
     return jsonify(response)
 
