@@ -2,16 +2,15 @@ from sqlalchemy import create_engine
 import pandas as pd
 from flask import Flask, jsonify
 from scipy import stats
-from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import LabelEncoder
-from sklearn import linear_model
+import pickle as pk
 
 
 app = Flask(__name__)
 
 
 def getConnection():
-    return create_engine('postgresql://postgres:postgrespw@localhost:49153/')
+    return create_engine('postgresql://postgres:mysecretpassword@localhost:5432/')
 
 
 def getVehiclesId(fuelConsumptionData):
@@ -141,47 +140,33 @@ def getPersonRStats():
     return jsonify(response)
 
 
-@app.route('/linear-regression-feature-importance', methods=['GET'])
-def linearRegressionFeatureImportance():
-    dataFrame = pd.read_csv("D:\\Users\\jhonf\\Documents\\Programacion\\Codigo\\Python\\ai-fuel-consumption-ratings\\src\\main" \
-           "\\resoures\\MY2022FuelConsumptionRatings.csv")
+@app.route('/dataset-linear-regression', methods=['GET'])
+def DatasetLinearRegression():
+    dataFrame = findAllDataSet()
     le = LabelEncoder()
     dataFrame['strClass'] = le.fit_transform(dataFrame['strClass'])
     dataFrame['strTransmission'] = le.fit_transform(dataFrame['strTransmission'])
     dataFrame['strFuelType'] = le.fit_transform(dataFrame['strFuelType'])
 
-    # define dataset
     X = dataFrame[['strClass', 'douEngineSize_L', 'intCylinders', 'strTransmission', 'strFuelType',
                    'intCO2Emissions_g-km', 'intCO2Rating', 'intSmogRating']]
     y = dataFrame[['douFuelConsumption_Comb_L-100km']]
-    from sklearn.model_selection import train_test_split
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=4)
-
-    mlm = linear_model.LinearRegression()
-    mlm.fit(X_train, y_train)
-    # The value of the intercept (a)
-    print('The value of the intercept of mutiple linear regression model is: ', mlm.intercept_)
-    # The coefficients
-    print('The Coefficients of mutiple linear regression model is: ', mlm.coef_)
-
-    Features = ['strClass', 'douEngineSize_L', 'intCylinders', 'strTransmission', 'strFuelType', 'intCO2Emissions_g-km',
-                'intCO2Rating', 'intSmogRating']
-    # define the model
-    model = LinearRegression()
-    # fit the model
-    model.fit(X_train, y_train)
-    # get importance
-    importance = model.coef_
-    # summarize feature importance
-    for index, coef in enumerate(importance):
-        print('Feature: %0d, Score: %.5f' % (index, coef))
 
     response = {
-        'CO2 Emissions(g/km)': 'co2EmissionsStats',
-        'CO2 Rating': 'co2RatingStats',
-        'Smog Rating': 'smogRatingStats',
-        'Cylinders': 'cylindersStats',
-        'Engine Size': 'engineSizeStats'
+        'X': X.to_numpy().tolist(),
+        'y': y.to_numpy().tolist()
+    }
+    return jsonify(response)
+
+
+@app.route('/linear-regression-feature-importance', methods=['GET'])
+def linearRegressionFeatureImportance():
+    pickle_file = open('D:\\Users\\jhonf\\Documents\\Programacion\\Codigo\\Python\\ai-fuel-consumption-ratings\\src'
+                       '\\main\\resoures\\modelo.txt', 'rb')
+    modelo = pk.load(pickle_file)
+
+    response = {
+        'predictions': modelo.predict([[0.0, 2.4, 4.0, 7.0, 3.0, 200.0, 6.0, 3.0], [7.0, 3.5, 6.0, 8.0, 3.0, 263.0, 4.0, 5.0], [7.0, 2.0, 4.0, 8.0, 3.0, 232.0, 5.0, 6.0], [7.0, 2.0, 4.0, 8.0, 3.0, 242.0, 5.0, 6.0], [0.0, 2.0, 4.0, 8.0, 3.0, 230.0, 5.0, 7.0], [0.0, 2.0, 4.0, 8.0, 3.0, 231.0, 5.0, 7.0], [0.0, 3.0, 6.0, 8.0, 3.0, 256.0, 5.0, 5.0], [0.0, 3.0, 6.0, 8.0, 3.0, 261.0, 4.0, 5.0], [2.0, 2.0, 4.0, 3.0, 3.0, 205.0, 6.0, 3.0], [2.0, 2.0, 4.0, 3.0, 3.0, 217.0, 5.0, 3.0], [2.0, 2.9, 6.0, 3.0, 3.0, 271.0, 4.0, 3.0], [7.0, 2.0, 4.0, 3.0, 3.0, 218.0, 5.0, 3.0], [7.0, 2.0, 4.0, 3.0, 3.0, 226.0, 5.0, 3.0], [7.0, 2.9, 6.0, 3.0, 3.0, 288.0, 4.0, 3.0], [3.0, 4.0, 8.0, 3.0, 3.0, 271.0, 4.0, 5.0], [3.0, 5.2, 12.0, 3.0, 3.0, 324.0, 3.0, 3.0], [3.0, 5.2, 12.0, 3.0, 3.0, 324.0, 3.0, 3.0], [8.0, 4.0, 8.0, 4.0, 3.0, 343.0, 3.0, 5.0], [13.0, 4.0, 8.0, 3.0, 3.0, 270.0, 4.0, 5.0], [12.0, 2.0, 4.0, 6.0, 2.0, 178.0, 7.0, 7.0], [0.0, 2.0, 4.0, 6.0, 3.0, 190.0, 6.0, 5.0], [0.0, 2.0, 4.0, 6.0, 3.0, 205.0, 6.0, 5.0], [11.0, 2.0, 4.0, 6.0, 3.0, 208.0, 6.0, 5.0], [12.0, 2.0, 4.0, 6.0, 3.0, 214.0, 5.0, 5.0], [12.0, 2.0, 4.0, 6.0, 3.0, 205.0, 6.0, 5.0], [2.0, 2.0, 4.0, 6.0, 3.0, 205.0, 6.0, 5.0], [2.0, 2.0, 4.0, 6.0, 3.0, 208.0, 6.0, 5.0], [2.0, 3.0, 6.0, 6.0, 3.0, 224.0, 5.0, 5.0], [10.0, 3.0, 6.0, 6.0, 3.0, 234.0, 5.0, 5.0], [2.0, 3.0, 6.0, 6.0, 3.0, 224.0, 5.0, 5.0], [1.0, 3.0, 6.0, 12.0, 3.0, 248.0, 5.0, 5.0], [7.0, 2.0, 4.0, 12.0, 2.0, 215.0, 5.0, 7.0], [7.0, 2.0, 4.0, 12.0, 2.0, 233.0, 5.0, 7.0], [7.0, 2.0, 4.0, 6.0, 3.0, 217.0, 5.0, 5.0], [7.0, 2.0, 4.0, 6.0, 3.0, 220.0, 5.0, 5.0], [7.0, 2.0, 4.0, 6.0, 3.0, 220.0, 5.0, 5.0], [8.0, 2.0, 4.0, 12.0, 3.0, 252.0, 5.0, 3.0], [8.0, 3.0, 6.0, 12.0, 3.0, 273.0, 4.0, 5.0], [8.0, 3.0, 6.0, 12.0, 3.0, 273.0, 4.0, 5.0], [13.0, 5.2, 10.0, 6.0, 3.0, 322.0, 3.0, 1.0], [13.0, 5.2, 10.0, 6.0, 3.0, 356.0, 3.0, 1.0], [13.0, 5.2, 10.0, 6.0, 3.0, 322.0, 3.0, 1.0], [13.0, 5.2, 10.0, 6.0, 3.0, 356.0, 3.0, 1.0], [12.0, 2.9, 6.0, 12.0, 3.0, 267.0, 4.0, 5.0], [2.0, 2.9, 6.0, 12.0, 3.0, 268.0, 4.0, 5.0], [10.0, 4.0, 8.0, 12.0, 3.0, 319.0, 3.0, 3.0], [2.0, 4.0, 8.0, 12.0, 3.0, 315.0, 3.0, 3.0], [8.0, 4.0, 8.0, 12.0, 3.0, 360.0, 2.0, 3.0], [12.0, 2.0, 4.0, 6.0, 3.0, 206.0, 6.0, 5.0], [0.0, 3.0, 6.0, 12.0, 3.0, 227.0, 5.0, 5.0], [12.0, 3.0, 6.0, 12.0, 3.0, 233.0, 5.0, 5.0], [12.0, 3.0, 6.0, 12.0, 3.0, 227.0, 5.0, 5.0], [2.0, 3.0, 6.0, 12.0, 3.0, 227.0, 5.0, 5.0], [2.0, 2.9, 6.0, 12.0, 3.0, 254.0, 5.0, 5.0], [2.0, 2.9, 6.0, 12.0, 3.0, 254.0, 5.0, 5.0], [1.0, 4.0, 8.0, 12.0, 3.0, 323.0, 3.0, 3.0], [7.0, 3.0, 6.0, 12.0, 3.0, 262.0, 4.0, 5.0], [7.0, 3.0, 6.0, 12.0, 3.0, 262.0, 4.0, 5.0], [8.0, 4.0, 8.0, 12.0, 3.0, 325.0, 3.0, 3.0], [8.0, 4.0, 8.0, 12.0, 3.0, 325.0, 3.0, 3.0], [12.0, 2.0, 4.0, 6.0, 2.0, 218.0, 5.0, 7.0], [13.0, 2.0, 4.0, 6.0, 2.0, 218.0, 5.0, 7.0], [12.0, 2.5, 5.0, 6.0, 3.0, 235.0, 5.0, 3.0], [12.0, 2.0, 4.0, 6.0, 3.0, 209.0, 5.0, 3.0], [8.0, 4.0, 8.0, 12.0, 3.0, 309.0, 3.0, 3.0], [8.0, 6.0, 12.0, 12.0, 3.0, 383.0, 2.0, 3.0], [12.0, 4.0, 8.0, 7.0, 3.0, 287.0, 4.0, 3.0], [12.0, 6.0, 12.0, 7.0, 3.0, 379.0, 2.0, 3.0], [3.0, 4.0, 8.0, 7.0, 3.0, 294.0, 4.0, 3.0], [3.0, 6.0, 12.0, 7.0, 3.0, 395.0, 2.0, 3.0], [2.0, 4.0, 8.0, 7.0, 3.0, 323.0, 3.0, 3.0], [2.0, 6.0, 12.0, 7.0, 3.0, 373.0, 2.0, 3.0], [0.0, 2.0, 4.0, 12.0, 3.0, 195.0, 6.0, 7.0], [12.0, 2.0, 4.0, 12.0, 3.0, 202.0, 6.0, 7.0], [12.0, 2.0, 4.0, 12.0, 3.0, 202.0, 6.0, 7.0], [2.0, 2.0, 4.0, 12.0, 3.0, 206.0, 6.0, 7.0], [1.0, 3.0, 6.0, 12.0, 3.0, 219.0, 5.0, 5.0], [1.0, 4.4, 8.0, 12.0, 3.0, 279.0, 4.0, 3.0], [1.0, 4.4, 8.0, 12.0, 3.0, 279.0, 4.0, 3.0], [1.0, 4.4, 8.0, 12.0, 3.0, 279.0, 4.0, 3.0], [2.0, 4.4, 8.0, 12.0, 3.0, 279.0, 4.0, 3.0], [8.0, 4.4, 8.0, 12.0, 3.0, 321.0, 3.0, 3.0], [0.0, 2.0, 4.0, 12.0, 3.0, 214.0, 5.0, 3.0], [12.0, 3.0, 6.0, 12.0, 3.0, 212.0, 5.0, 5.0], [0.0, 3.0, 6.0, 21.0, 3.0, 293.0, 4.0, 5.0], [0.0, 3.0, 6.0, 12.0, 3.0, 292.0, 4.0, 5.0], [0.0, 3.0, 6.0, 12.0, 3.0, 296.0, 4.0, 5.0], [0.0, 3.0, 6.0, 12.0, 3.0, 214.0, 5.0, 5.0], [12.0, 3.0, 6.0, 12.0, 3.0, 301.0, 3.0, 5.0], [12.0, 3.0, 6.0, 21.0, 3.0, 293.0, 4.0, 5.0], [12.0, 3.0, 6.0, 12.0, 3.0, 292.0, 4.0, 5.0], [12.0, 3.0, 6.0, 12.0, 3.0, 296.0, 4.0, 5.0], [12.0, 3.0, 6.0, 12.0, 3.0, 211.0, 5.0, 5.0], [12.0, 3.0, 6.0, 12.0, 3.0, 214.0, 5.0, 5.0], [0.0, 3.0, 6.0, 12.0, 3.0, 224.0, 5.0, 5.0], [2.0, 4.4, 8.0, 12.0, 3.0, 322.0, 3.0, 3.0], [2.0, 4.4, 8.0, 12.0, 3.0, 322.0, 3.0, 3.0], [2.0, 4.4, 8.0, 12.0, 3.0, 322.0, 3.0, 3.0], [2.0, 4.4, 8.0, 12.0, 3.0, 271.0, 4.0, 3.0]]).tolist()
     }
     return jsonify(response)
 
