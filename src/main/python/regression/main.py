@@ -168,7 +168,7 @@ def predict():
         modelo = pk.load(pickle_file)
 
         response = {
-            'predictions': modelo.predict(request.json['predictions']).tolist()
+            'predictions': modelo.predict(request.json['samples']).tolist()
         }
         return jsonify(response)
     else:
